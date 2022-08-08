@@ -1,48 +1,44 @@
-% Simulate CHARMED
-function [dwis ]=SimChm(B0, FA, DTmaps, mag, vec, grad_dirs, mask, maxq, delta, smalldel, theta_q, phi_q, R, weight, R_q, bval, MD250)
-[xlocs ylocs zlocs]=ind2sub(size(mask), find(mask==1));
-dwis=zeros([size(mask) length(grad_dirs)]);
-bmatrix=zeros([3 3 length(bval)]);
-for i=1:length(bval)
-bmatrix(:,:,i)=bval(i)*grad_dirs(i,:)'*grad_dirs(i,:);
-end
-a=R;
-l_a=length(a);
-l_q=length(R_q);
-R_mat=repmat(a,[l_q 1]);
+function dwi_simulates = simchm(rb0_map, fa, dt, vec, grad_dirs, mask, scan_param, add_vals, gamma_dist, bval, md)
+    % R\a = add_vals
+    % weight = gamma_dist
 
-gamma=weight./sum(weight);
-gamma_matrix=repmat(gamma,[l_q 1]);
-
-for i=1:length(zlocs);
-    M0=B0(xlocs(i), ylocs(i), zlocs(i));
- 
-    f_h=(1-FA(xlocs(i), ylocs(i), zlocs(i)));
-    tf_r=1-f_h;
-    f_r=mag(xlocs(i), ylocs(i), zlocs(i));
-    [phi_N theta_N R_N]=cart2sph(vec(xlocs(i), ylocs(i), zlocs(i),1), vec(xlocs(i), ylocs(i), zlocs(i),2), -vec(xlocs(i), ylocs(i), zlocs(i),3));
-    D_r=MD250(xlocs(i), ylocs(i), zlocs(i));
+    [xlocs ylocs zlocs] = ind2sub(size(mask), find(mask==1));
+    dwi_simulates = zeros([size(mask) length(bval)]);
     
-    D_mat=[DTmaps(xlocs(i), ylocs(i), zlocs(i), 1) DTmaps(xlocs(i), ylocs(i), zlocs(i), 2) DTmaps(xlocs(i), ylocs(i), zlocs(i), 3); DTmaps(xlocs(i), ylocs(i), zlocs(i), 2) DTmaps(xlocs(i), ylocs(i), zlocs(i), 4) DTmaps(xlocs(i), ylocs(i), zlocs(i), 5); DTmaps(xlocs(i), ylocs(i), zlocs(i), 3) DTmaps(xlocs(i), ylocs(i), zlocs(i), 5) DTmaps(xlocs(i), ylocs(i), zlocs(i), 6)];
-    for j=1:length(bval)
-        E_h(j)=f_h.*exp(-4.*(grad_dirs(j,:)*(1000.*D_mat)*grad_dirs(j,:)'));       
+    add_vals = add_vals/2;
+    len_av = length(add_vals);
+    len_r = length(scan_param.r);
+    r_mat = repmat(add_vals,[len_r 1]);
+    gamma_dist_norm = gamma_dist./sum(gamma_dist);
+    gamma_matrix = repmat(gamma_dist_norm,[len_r 1]);
+
+    for i = 1:length(zlocs)
+        xi = xlocs(i); yi = ylocs(i); zi = zlocs(i);
+        b0_signal = rb0_map(xi, yi, zi);
+        hindered_fraction = (1-fa(xi, yi, zi));
+        restricted_fraction = 1-hindered_fraction;
+        [phi_sim, theta_sim, ~] = cart2sph(vec(xi, yi, zi, 1), vec(xi, yi, zi, 2), -vec(xi, yi, zi, 3));
+        md_i = md(xi, yi, zi);
+        dt_mat = [dt(xi, yi, zi, 1) dt(xi, yi, zi, 2) dt(xi, yi, zi, 3); dt(xi, yi, zi, 2) dt(xi, yi, zi, 4) dt(xi, yi, zi, 5); dt(xi, yi, zi, 3) dt(xi, yi, zi, 5) dt(xi, yi, zi, 6)];
+        
+        estimated_hindered = zeros(1,length(bval));
+        for bi = 1:length(bval)
+            estimated_hindered(bi) = hindered_fraction .* exp(-4 .* (grad_dirs(bi,:) * (1000.*dt_mat) * grad_dirs(bi,:)'));       
+        end
+    
+    
+        factor_angle_term_par = abs(cos(scan_param.theta) .* cos(theta_sim) .* ...
+            cos(scan_param.phi-phi_sim) + sin(scan_param.theta) * sin(theta_sim));
+        factor_angle_term_perp = sqrt(1 - factor_angle_term_par .^ 2);
+        q_par_sq = (scan_param.r .* factor_angle_term_par) .^ 2;
+        q_par_sq_matrix = repmat(q_par_sq, [1, len_av]);
+        q_perp_sq = (scan_param.r .* factor_angle_term_perp) .^ 2;
+        q_perp_sq_matrix = repmat(q_perp_sq, [1, len_av]);
+    
+        exp_q_perp = exp(-4 * pi ^ 2 * q_perp_sq_matrix .* r_mat .^ 2);
+        exp_q_par = exp(-4 * pi ^ 2 * q_par_sq_matrix * (scan_param.big_delta - scan_param.small_delta / 3) * md_i) .* exp_q_perp;
+    
+        estimated_restricted = sum(exp_q_par .* gamma_matrix, 2);    
+        dwi_simulates(xi, yi, zi, :) = b0_signal .* (restricted_fraction .* estimated_restricted' + estimated_hindered);
     end
-    
-    
-    factor_angle_term_par=abs(cos(theta_q).*cos(theta_N).*...
-        cos(phi_q-phi_N)+...
-        sin(theta_q)*sin(theta_N));
-    factor_angle_term_perp=sqrt(1-factor_angle_term_par.^2);
-    q_par_sq=(R_q.*factor_angle_term_par).^2;
-    q_par_sq_matrix=repmat(q_par_sq,[1,l_a]);
-    q_perp_sq=(R_q.*factor_angle_term_perp).^2;
-    q_perp_sq_matrix=repmat(q_perp_sq,[1,l_a]);
-    
-    E=exp(-4*pi^2*q_perp_sq_matrix.*R_mat.^2);
-    
-    E1=exp(-4*pi^2*q_par_sq_matrix*(delta-smalldel/3)*D_r).*E;
-    
-    E_r=sum(E1.*gamma_matrix,2);
-    
-    dwis(xlocs(i), ylocs(i), zlocs(i),:)=M0.*(f_r.*E_r'+E_h);
 end
