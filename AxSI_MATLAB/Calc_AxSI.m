@@ -29,6 +29,7 @@ function [rdwi, pcsf, ph, pfr, pasi, paxsi] = Calc_AxSI(subj_folder, file_names)
     beq=1;
     al = 3;
     be = 2;
+    add_vals = 0.1:0.2:32;
     yd=gampdf(add_vals,al, be);
     yd=yd.*(pi*(add_vals/2).^2);
     yd=yd./sum(yd);
