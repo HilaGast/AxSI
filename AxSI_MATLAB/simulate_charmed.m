@@ -16,7 +16,7 @@ function dwi_simulates = simulate_charmed(data, scan_param, fa1000, dt1000, eigv
     end
     rb0_map = mean(rb0_data,4);
 
-    dwi_simulates = simchm(rb0_map, fa1000, dt1000, real(eigvec1000), grad_dirs, mask, scan_param, add_vals, gamma_dist, bval, md1000);
+    dwi_simulates = SimChm(rb0_map, fa1000, dt1000, real(eigvec1000), grad_dirs, mask, scan_param, add_vals, gamma_dist, bval, md1000);
 
     for i = 1:length(bval)
         dwi_sim1 = dwi_simulates(:, :, :, i);
