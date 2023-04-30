@@ -60,7 +60,7 @@ function [rdwi, pcsf, ph, pfr, pasi, paxsi] = AxSI_main(subj_folder, file_names,
     dwi_simulates = simulate_charmed(data, scan_param, fa1000, dt1000, eigvec1000, grad_dirs, mask, add_vals, gamma_dist, bval, md1000, preprocessed);
 
 % UNDISTORT - Registration and gradient reorientation
-    [rdwi, grad_dirs] = AxSI_undistort(grad_dirs, dwi_simulates, data,bval, preprocessed);
+    [rdwi, grad_dirs] = AxSI_undistort(grad_dirs, dwi_simulates, data,bval, scan_param, preprocessed);
 
 % calculate DTI parameter for each b shel
     bshell = unique(bval)';
