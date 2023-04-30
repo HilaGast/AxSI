@@ -1,4 +1,4 @@
-function [rdwi, grad_dirs] = AxSI_undistort(grad_dirs, dwi_simulates, data, bval, preprocessed)
+function [rdwi, grad_dirs] = AxSI_undistort(grad_dirs, dwi_simulates, data, bval, scan_param, preprocessed)
 
     if preprocessed
         rdwi = zeros(size(data));
