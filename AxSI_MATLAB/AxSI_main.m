@@ -78,4 +78,4 @@ function [rdwi, pcsf, ph, pfr, pasi, paxsi] = AxSI_main(subj_folder, file_names,
     save(fullfile(subj_folder,'AxSI','Charmed_vars.mat'),'bval', 'mask', 'grad_dirs', 'scan_param', 'rdwi','eigvec1000', 'dt1000', 'sMD','bshell', 'sEigval','-v7.3'); 
     
 % AxSI:
-    [rdwi, pcsf, ph, pfr, pasi, paxsi] = Calc_AxSI(subj_folder, file_names);
+    [rdwi, pcsf, ph, pfr, pasi, paxsi] = Calc_AxSI(subj_folder, file_names, save_files);
