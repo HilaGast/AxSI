@@ -1,4 +1,4 @@
-function [rdwi, pcsf, ph, pfr, pasi, paxsi] = Calc_AxSI(subj_folder, file_names)
+function [rdwi, pcsf, ph, pfr, pasi, paxsi] = Calc_AxSI(subj_folder, file_names, save_files)
 
     clearvars -except subj_folder file_names
                
