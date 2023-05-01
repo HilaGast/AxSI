@@ -32,7 +32,7 @@ function [rdwi, pcsf, ph, pfr, pasi, paxsi] = AxSI_main(subj_folder, file_names,
     [fa1000, md1000, dt1000, ~, eigvec1000]= AxSI_dti(double(bval1000), bvec1000, rdata1000, 1, mask);
 
 % Save FA & MD:
-    if save_files==1
+    if save_files
         info_nii.Datatype = 'double'; 
         info_nii.BitsPerPixel = 64; 
         info_nii.ImageSize = size(fa1000); 

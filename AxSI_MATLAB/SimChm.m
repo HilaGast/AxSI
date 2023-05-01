@@ -1,4 +1,4 @@
-function dwi_simulates = simchm(rb0_map, fa, dt, vec, grad_dirs, mask, scan_param, add_vals, gamma_dist, bval, md)
+function dwi_simulates = SimChm(rb0_map, fa, dt, vec, grad_dirs, mask, scan_param, add_vals, gamma_dist, bval, md)
     % R\a = add_vals
     % weight = gamma_dist
 

@@ -1,6 +1,6 @@
 function [rdwi, pcsf, ph, pfr, pasi, paxsi] = Calc_AxSI(subj_folder, file_names, save_files)
 
-    clearvars -except subj_folder file_names
+    clearvars -except subj_folder file_names save_files
                
     load(fullfile(subj_folder,'AxSI','Charmed_vars.mat'),'bval', 'mask', 'grad_dirs', 'rdwi','scan_param','eigvec1000', 'dt1000', 'sMD','bshell', 'sEigval');
     [X, Y, Z] = size(mask);
